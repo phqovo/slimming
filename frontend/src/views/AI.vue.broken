@@ -1,0 +1,582 @@
+<template>
+  <div class="ai-container">
+    <!-- 聊天区域 -->
+    <div class="chat-wrapper">
+      <div class="chat-messages" ref="messagesContainer">
+        <div
+          v-for="(message, index) in messages"
+          :key="index"
+          :class="['message-item', message.role]"
+        src="https://image.piheqi.com/uPic/chatgpt.jpg"
+          <div class="message-avatar">
+            <el-avatar
+              v-if="message.role === 'assistant'"
+              src="/ai-avatar.svg"
+              :size="40"
+            />
+            <el-avatar
+              v-else
+              :src="userStore.userInfo?.avatar || '/default-avatar.png'"
+              :size="40"
+            />
+          </div>
+          <div class="message-content">
+            <template v-for="part in parseMarkdownCode(message.content)" :key="part">
+              <div v-if="part.type === 'text'" class="message-text">{{ part.content }}</div>
+              <div v-else-if="part.type === 'code'" class="code-block">
+                <div class="code-header">
+                  <span class="code-language">{{ getLanguageDisplayName(part.language) }}</span>
+                  <el-button 
+                    link 
+                    size="small" 
+                    @click="copyCode(part.content)"
+                    class="copy-btn"
+                  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+                    📋 复制
+                  </el-button>
+                </div>
+                <pre><code :class="'language-' + part.language" v-html="highlightCode(part.content, part.language)"></code></pre>
+              </div>
+            </template>
+            <div class="message-time">{{ formatTime(message.timestamp) }}</div>
+          </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div v-if="loading" class="message-item assistant">
+          <div class="message-avatar">
+            <el-avatar src="/ai-avatar.svg" :size="40" />
+          </div>
+          <div class="message-content">
+            <div class="loading-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 输入区域 -->
+      <div class="chat-input-wrapper">
+        <div class="input-container">
+          <el-input
+            v-model="inputValue"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入您的问题... (Shift + Enter 换行，Enter 发送)"
+            @keydown.enter="handleSendMessage"
+            :disabled="loading"
+          />
+          <el-button
+            type="primary"
+            :loading="loading"
+            @click="handleSendMessage"
+            class="send-btn"
+          src="https://image.piheqi.com/uPic/chatgpt.jpg"
+            发送
+          </el-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, nextTick } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus'
+import dayjs from 'dayjs'
+import hljs from 'highlight.js/lib/core'
+import java from 'highlight.js/lib/languages/java'
+import javascript from 'highlight.js/lib/languages/javascript'
+import python from 'highlight.js/lib/languages/python'
+import cpp from 'highlight.js/lib/languages/cpp'
+import csharp from 'highlight.js/lib/languages/csharp'
+import bash from 'highlight.js/lib/languages/bash'
+import sql from 'highlight.js/lib/languages/sql'
+import 'highlight.js/styles/atom-one-light.css'
+
+// 注册語言
+hljs.registerLanguage('java', java)
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('python', python)
+hljs.registerLanguage('cpp', cpp)
+hljs.registerLanguage('csharp', csharp)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('sql', sql)
+
+const userStore = useUserStore()
+const messagesContainer = ref(null)
+const messages = ref([])
+const inputValue = ref('')
+const loading = ref(false)
+
+// 解析 Markdown 中的代码块
+const parseMarkdownCode = (content) => {
+  // 匹配 ```language\n...\n``` 格式
+  const codeBlockRegex = /```([a-zA-Z0-9]*?)\n([\s\S]*?)```/g
+  const result = []
+  let lastIndex = 0
+  let match
+
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    // 添加代码块前的文本
+    if (match.index > lastIndex) {
+      result.push({
+        type: 'text',
+        content: content.slice(lastIndex, match.index)
+      src="https://image.piheqi.com/uPic/chatgpt.jpg"
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+    // 添加代码块
+    result.push({
+      type: 'code',
+      language: match[1] || 'plaintext',
+      content: match[2].trim()
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+    lastIndex = match.index + match[0].length
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+  // 添加剩余的文本
+  if (lastIndex < content.length) {
+    result.push({
+      type: 'text',
+      content: content.slice(lastIndex)
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+  return result.length > 0 ? result : [{ type: 'text', content }]
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+// 为代码添加基本的语法高亮
+const highlightCode = (code, language) => {
+  try {
+    if (language && hljs.getLanguage(language)) {
+      return hljs.highlight(code, { language, ignoreIllegals: true }).value
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+  } catch (e) {
+    console.warn('Code highlight failed:', e)
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+  return hljs.highlightAuto(code).value
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+// 获取语言的显示名称
+const getLanguageDisplayName = (lang) => {
+  const names = {
+    'javascript': 'JavaScript',
+    'typescript': 'TypeScript',
+    'python': 'Python',
+    'java': 'Java',
+    'cpp': 'C++',
+    'c': 'C',
+    'csharp': 'C#',
+    'go': 'Go',
+    'rust': 'Rust',
+    'php': 'PHP',
+    'ruby': 'Ruby',
+    'sql': 'SQL',
+    'html': 'HTML',
+    'css': 'CSS',
+    'json': 'JSON',
+    'bash': 'Bash',
+    'shell': 'Shell',
+    'plaintext': 'Code'
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+  return names[lang.toLowerCase()] || lang.toUpperCase()
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+// 初始化欢迎消息
+const initWelcomeMessage = () => {
+  messages.value = [
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+      role: 'assistant',
+      content: '你好！👋 我是 AI 助手，可以帮助您解答关于健康管理、饮食、运动等各方面的问题。有什么我可以帮助你的吗？',
+      timestamp: new Date()
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+// 格式化时间
+const formatTime = (date) => {
+  return dayjs(date).format('HH:mm')
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+// 滚动到最新消息
+const scrollToBottom = async () => {
+  await nextTick()
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+// 发送消息
+const handleSendMessage = async (event) => {
+  // 如果是 Shift + Enter，则换行；否则发送消息
+  if (event && event.shiftKey) {
+    return
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+  if (event && event.type === 'keydown') {
+    event.preventDefault()
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+  const message = inputValue.value.trim()
+  if (!message || loading.value) return
+
+  // 添加用户消息
+  messages.value.push({
+    role: 'user',
+    content: message,
+    timestamp: new Date()
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+  inputValue.value = ''
+  loading.value = true
+  await scrollToBottom()
+
+  try {
+    // 调用后端 API
+    const response = await fetch('/health/api/v1/ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      src="https://image.piheqi.com/uPic/chatgpt.jpg"
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: messages.value
+          .filter(m => m.role !== 'thinking')
+          .map(m => ({
+            role: m.role,
+            content: m.content
+          })),
+        temperature: 0.7,
+        max_tokens: 2000
+      src="https://image.piheqi.com/uPic/chatgpt.jpg"
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+    if (!response.ok) {
+      throw new Error('API 请求失败')
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+    // 处理流式响应
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let assistantMessage = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date()
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+    messages.value.push(assistantMessage)
+    await scrollToBottom()
+
+    let buffer = ''
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      
+      // 保留最后一行（可能不完整）
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const dataStr = trimmed.slice(6)
+            if (dataStr === '[DONE]') {
+              continue
+            src="https://image.piheqi.com/uPic/chatgpt.jpg"
+            const json = JSON.parse(dataStr)
+            if (json.choices?.[0]?.delta?.content) {
+              assistantMessage.content += json.choices[0].delta.content
+              // 强制更新消息以触发界面重新渲染
+              messages.value[messages.value.length - 1] = { ...assistantMessage }
+              await scrollToBottom()
+            src="https://image.piheqi.com/uPic/chatgpt.jpg"
+          } catch (e) {
+            // 忽略解析错误
+            console.error('Error parsing SSE:', e)
+          src="https://image.piheqi.com/uPic/chatgpt.jpg"
+        src="https://image.piheqi.com/uPic/chatgpt.jpg"
+      src="https://image.piheqi.com/uPic/chatgpt.jpg"
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+    
+    // 处理缓冲区中剩余的数据
+    if (buffer.trim()) {
+      const trimmed = buffer.trim()
+      if (trimmed.startsWith('data: ')) {
+        try {
+          const dataStr = trimmed.slice(6)
+          if (dataStr !== '[DONE]') {
+            const json = JSON.parse(dataStr)
+            if (json.choices?.[0]?.delta?.content) {
+              assistantMessage.content += json.choices[0].delta.content
+              messages.value[messages.value.length - 1] = { ...assistantMessage }
+            src="https://image.piheqi.com/uPic/chatgpt.jpg"
+          src="https://image.piheqi.com/uPic/chatgpt.jpg"
+        } catch (e) {
+          console.error('Error parsing final SSE:', e)
+        src="https://image.piheqi.com/uPic/chatgpt.jpg"
+      src="https://image.piheqi.com/uPic/chatgpt.jpg"
+    src="https://image.piheqi.com/uPic/chatgpt.jpg"
+  } catch (error) {
+    console.error('发送消息失败:', error)
+    ElMessage.error('发送消息失败，请重试')
+    // 移除加载消息
+    messages.value.pop()
+  } finally {
+    loading.value = false
+    await scrollToBottom()
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+onMounted(() => {
+  initWelcomeMessage()
+  scrollToBottom()
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+// 复制代码到剪贴板
+const copyCode = (code) => {
+  navigator.clipboard.writeText(code).then(() => {
+    ElMessage.success('已复制到剪贴板')
+  }).catch(() => {
+    ElMessage.error('复制失败，请重试')
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+</script>
+
+<style scoped>
+.ai-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 120px);
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.chat-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f5f7fa;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-item {
+  display: flex;
+  gap: 12px;
+  animation: slideIn 0.3s ease-out;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-item.user {
+  flex-direction: row-reverse;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-avatar {
+  flex-shrink: 0;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-item.assistant .message-content {
+  align-items: flex-start;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-item.user .message-content {
+  align-items: flex-end;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-text {
+  padding: 12px 16px;
+  border-radius: 12px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-size: 14px;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-item.assistant .message-text {
+  background: #fff;
+  color: #333;
+  border: 1px solid #e0e0e0;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-item.user .message-text {
+  background: #409eff;
+  color: #fff;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.message-time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+  padding: 0 4px;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.chat-input-wrapper {
+  border-top: 1px solid #e0e0e0;
+  padding: 20px;
+  background: #fff;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.input-container {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.input-container :deep(.el-textarea) {
+  flex: 1;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.input-container :deep(.el-textarea__inner) {
+  border-radius: 8px;
+  resize: none;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.send-btn {
+  padding: 0 32px;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+/* 加载动画 */
+.loading-dots {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #409eff;
+  animation: bounce 1.4s infinite;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.loading-dots span:nth-child(1) {
+  animation-delay: 0s;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  src="https://image.piheqi.com/uPic/chatgpt.jpg"
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+/* 代码块样式 */
+.code-block {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin: 12px 0;
+  overflow: hidden;
+  font-size: 13px;
+  max-width: 100%;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #ececec;
+  border-bottom: 1px solid #e0e0e0;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.code-language {
+  color: #666;
+  font-weight: 500;
+  font-size: 12px;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.copy-btn {
+  color: #999;
+  padding: 0 4px;
+  --el-link-text-color: #999;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.copy-btn:hover {
+  color: #333;
+  --el-link-text-color: #333;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.code-block pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.code-block code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  line-height: 1.6;
+  background: transparent;
+  padding: 0;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+/* 代码高亮样式 - 使用 highlight.js atom-one-light 主题 */
+.code-block .hljs {
+  background: transparent;
+  padding: 0;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+/* 滚动条样式 */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #999;
+src="https://image.piheqi.com/uPic/chatgpt.jpg"
+</style>

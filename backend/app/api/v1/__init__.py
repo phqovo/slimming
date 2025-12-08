@@ -1,0 +1,25 @@
+from fastapi import APIRouter
+from app.api.v1 import auth, user, weight, exercise, diet, health, settings, daily_history, food, food_unit, ai, auth_management, external_data, data_sync, leaderboard, user_profile, home, nutrition_analysis, oauth, account_bind
+
+api_router = APIRouter()
+
+api_router.include_router(auth.router, prefix="/auth", tags=["认证"])
+api_router.include_router(user.router, prefix="/user", tags=["用户"])
+api_router.include_router(settings.router, prefix="/settings", tags=["设置"])
+api_router.include_router(home.router, prefix="/home", tags=["首页"])
+api_router.include_router(weight.router, prefix="/weight", tags=["体重管理"])
+api_router.include_router(exercise.router, prefix="/exercise", tags=["运动管理"])
+api_router.include_router(diet.router, prefix="/diet", tags=["饮食管理"])
+api_router.include_router(health.router, prefix="/health", tags=["健康数据"])
+api_router.include_router(daily_history.router, prefix="/history", tags=["每日汇总"])
+api_router.include_router(food.router, prefix="/food", tags=["食物热量库"])
+api_router.include_router(food_unit.router)
+api_router.include_router(ai.router, prefix="/ai", tags=["AI助手"])
+api_router.include_router(auth_management.router, prefix="/auth-management", tags=["授权管理"])
+api_router.include_router(external_data.router, prefix="/external-data", tags=["三方数据"])
+api_router.include_router(data_sync.router, prefix="/data-sync", tags=["数据同步"])
+api_router.include_router(leaderboard.router, tags=["减肥榜"])
+api_router.include_router(user_profile.router, prefix="/user", tags=["用户详情"])
+api_router.include_router(nutrition_analysis.router, prefix="/nutrition", tags=["营养分析"])
+api_router.include_router(oauth.router, prefix="/oauth", tags=["第三方登录"])
+api_router.include_router(account_bind.router, prefix="/oauth", tags=["账号绑定"])

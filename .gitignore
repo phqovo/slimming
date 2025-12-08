@@ -1,0 +1,37 @@
+.DS_Store
+*.log
+*.pid
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Environment
+.env
+*.env
+!.env.example
+
+# Sensitive files
+backend/.env
+frontend/.env
+frontendH5/.env
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Database
+*.db
+*.sqlite
