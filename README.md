@@ -1,6 +1,6 @@
-# 体重管理系统
+# 体重管理系统  - 减肥自用
 
-一个功能完整的体重管理系统，帮助用户记录和管理体重、运动、饮食等健康数据，并基于AI预测未来体重趋势。
+一个功能完整的体重管理系统，帮助用户记录和管理体重、运动、饮食等健康数据，并基于AI预测未来体重趋势。前后端代码完全由ai(qoder)编写  地址： https://piheqi.com/health
 
 ## ✨ 功能特性
 
@@ -276,24 +276,28 @@ DEBUG=True
 Authorization: Bearer <token>
 ```
 
-### 添加新功能
-
-1. 后端：在 `backend/app/api/v1/` 中添加路由
-2. 前端：在 `frontend/src/api/` 中添加接口调用
 3. 创建对应的页面或组件
 
 ## 📄 许可证
 
 MIT License
 
-## 👥 贡献
+### 页面截图
+<img width="1915" height="1032" alt="sy1" src="https://github.com/user-attachments/assets/2ede98a9-45b8-4cbf-9252-e7eca159e558" />
+<img width="1920" height="958" alt="xq" src="https://github.com/user-attachments/assets/a67bb0fb-ce08-4936-9f5d-f2d2c6670a12" />
+<img width="1920" height="958" alt="sy" src="https://github.com/user-attachments/assets/78e116d2-1cc7-404d-814b-2b6ba5a89593" />
+<img width="1920" height="958" alt="rl" src="https://github.com/user-attachments/assets/b8260ae2-2cf2-475e-8ca5-4e5dd5644237" />
+<img width="1920" height="958" alt="fx" src="https://github.com/user-attachments/assets/cc0cb7ff-fefe-4fa6-846c-0c1cb2a4de85" />
+<img width="1920" height="958" alt="ai" src="https://github.com/user-attachments/assets/ba973f84-8752-4887-92d2-6d7a6259014f" />
+<img width="1920" height="958" alt="拉取" src="https://github.com/user-attachments/assets/7984d132-143e-4454-a39d-54549743f5bd" />
+<img width="1920" height="958" alt="榜单" src="https://github.com/user-attachments/assets/17216fbd-5188-42ca-84a3-b27f17f924fc" />
+<img width="1920" height="958" alt="趋势" src="https://github.com/user-attachments/assets/39866470-a5f9-460f-a315-627f02cd439c" />
 
-欢迎提交 Issue 和 Pull Request！
 
-## 📮 联系方式
 
-如有问题，请提交 Issue。
 
----
 
-⭐ 如果这个项目对你有帮助，请给它一个星标！
+
+
+
+
