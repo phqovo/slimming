@@ -128,6 +128,7 @@ async def get_weight_progress(
     - 已减去的体重
     - 距离目标还有多少
     - 耗时天数
+    - 预计达到目标需要的天数
     """
     from app.models.weight import WeightRecord
     from datetime import date, timedelta
@@ -173,6 +174,70 @@ async def get_weight_progress(
     if current_user.target_weight:
         weight_to_goal = current_weight - current_user.target_weight
     
+    # 5. 根据历史趋势计算预计达到目标需要的天数
+    estimated_days_to_goal = None
+    if current_user.target_weight and weight_to_goal and weight_to_goal > 0:
+        # 智能选择时间范围：根据用户记录频率动态调整
+        all_records = db.query(WeightRecord).filter(
+            WeightRecord.user_id == current_user.id
+        ).order_by(WeightRecord.record_date.asc()).all()
+        
+        # 至少需要3条记录才能计算趋势
+        if len(all_records) >= 3:
+            # 计算用户的记录频率（总记录数 / 总天数）
+            first_date = all_records[0].record_date
+            last_date = all_records[-1].record_date
+            total_days = (last_date - first_date).days
+            
+            if total_days > 0:
+                record_frequency = len(all_records) / total_days  # 每天平均记录次数
+                
+                # 根据记录频率选择数据范围：
+                # - 如果记录频率 >= 0.7（约每天都记录），使用最近60天数据
+                # - 如果记录频率 >= 0.4（约2-3天记录一次），使用最近45天数据
+                # - 否则使用最近30天数据
+                if record_frequency >= 0.7:
+                    days_range = 60  # 频繁记录用户，用更多数据
+                elif record_frequency >= 0.4:
+                    days_range = 45  # 中等频率用户
+                else:
+                    days_range = 30  # 低频率用户
+                
+                # 获取指定时间范围的记录
+                range_records = db.query(WeightRecord).filter(
+                    WeightRecord.user_id == current_user.id,
+                    WeightRecord.record_date >= today - timedelta(days=days_range)
+                ).order_by(WeightRecord.record_date.asc()).all()
+                
+                # 如果范围内记录少于5条，回退到全部数据
+                if len(range_records) >= 5:
+                    records_to_use = range_records
+                else:
+                    # 数据太少，用全部历史数据
+                    records_to_use = all_records if len(all_records) >= 5 else None
+            else:
+                # 所有记录在同一天，无法计算
+                records_to_use = None
+            
+            # 计算平均每天的体重变化率
+            if records_to_use and len(records_to_use) >= 5:
+                start_weight = records_to_use[0].weight
+                end_weight = records_to_use[-1].weight
+                days_span = (records_to_use[-1].record_date - records_to_use[0].record_date).days
+                
+                if days_span > 0:
+                    daily_change = (end_weight - start_weight) / days_span  # 负数表示在减重
+                    
+                    # 如果趋势是在减重（daily_change < 0）
+                    if daily_change < 0:
+                        # 预计还需要多少天
+                        estimated_days_to_goal = int(abs(weight_to_goal / daily_change))
+                        # 限制在合理范围内（1-1000天）
+                        if estimated_days_to_goal < 1:
+                            estimated_days_to_goal = 1
+                        elif estimated_days_to_goal > 1000:
+                            estimated_days_to_goal = None  # 太久了，不显示
+    
     return {
         "code": 200,
         "data": {
@@ -182,7 +247,8 @@ async def get_weight_progress(
             "weight_change_date": weight_change_date,  # 对比的日期
             "weight_lost": weight_lost,  # 已减去的体重（kg）
             "weight_to_goal": weight_to_goal,  # 距离目标还有多少（kg）
-            "days_elapsed": days_elapsed  # 耗时天数
+            "days_elapsed": days_elapsed,  # 耗时天数
+            "estimated_days_to_goal": estimated_days_to_goal  # 预计达到目标需要的天数
         }
     }
 

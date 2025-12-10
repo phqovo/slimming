@@ -4,7 +4,10 @@
     <el-card class="welcome-card rounded-card" shadow="never">
       <div class="welcome-content">
         <div class="welcome-text">
-          <h2>你好，{{ userStore.userInfo?.nickname }}！</h2>
+          <div class="greeting-header">
+            <h2>你好，{{ userStore.userInfo?.nickname }}！</h2>
+            <span class="new-year-countdown">🎊 距离新年还有 <strong>{{ daysToNewYear }}</strong> 天</span>
+          </div>
           <p>{{ greeting }}</p>
           <!-- 个人信息提示 -->
           <div v-if="hasIncompleteProfile" class="profile-tip">
@@ -304,6 +307,13 @@ const greeting = computed(() => {
   return '晚上好！今天辛苦了'
 })
 
+// 计算距离2026年春节的天数
+const daysToNewYear = computed(() => {
+  const today = dayjs()
+  const springFestival = dayjs('2026-02-17') // 2026年农历春节
+  return springFestival.diff(today, 'day')
+})
+
 const waterPercentage = computed(() => {
   const target = 2000 // 目标饮水量2000ml
   return Math.min(Math.round((totalWater.value / target) * 100), 100)
@@ -344,6 +354,7 @@ const encouragementMessage = computed(() => {
   const weightLost = progress.value.weight_lost
   const weightToGoal = progress.value.weight_to_goal
   const daysElapsed = progress.value.days_elapsed || 0
+  const estimatedDays = progress.value.estimated_days_to_goal
   
   // 转换为显示单位
   const displayWeightLost = settingsStore.convertWeightToDisplay(Math.abs(weightLost))
@@ -355,7 +366,14 @@ const encouragementMessage = computed(() => {
     if (weightToGoal && weightToGoal <= 0) {
       return `🎉 太棒啦！你已经达成目标，成功减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天！`
     } else if (weightToGoal) {
-      return `👏 太棒啦！你已经减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天，距离目标还有 ${displayWeightToGoal} ${unit}！`
+      // 基础消息
+      let message = `👏 太棒啦！你已经减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天，距离目标还有 ${displayWeightToGoal} ${unit}`
+      // 如果有预计天数，添加到消息中
+      if (estimatedDays && estimatedDays > 0) {
+        message += `，大约还需要 ${estimatedDays} 天`
+      }
+      message += '！'
+      return message
     } else {
       return `💪 加油！你已经减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天，继续加油！`
     }
@@ -555,15 +573,43 @@ onMounted(() => {
   align-items: center;
 }
 
+.greeting-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .welcome-text h2 {
   font-size: 24px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   color: #333;
+}
+
+.new-year-countdown {
+  font-size: 14px;
+  color: #666;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+  border-radius: 20px;
+  border: 1px solid #ffcccc;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.new-year-countdown strong {
+  color: #f56c6c;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 2px;
 }
 
 .welcome-text p {
   font-size: 14px;
   color: #999;
+  margin-top: 8px;
 }
 
 /* 个人信息提示 */

@@ -13,17 +13,25 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 服务器配置
-SERVER_IP="117.72.214.121"
-SERVER_USER="root"
-SERVER_PASSWORD="G6^mJ!2e9"
-SERVER_BACKEND_DIR="/usr/local/src/web/backend"
-SERVER_FRONTEND_DIR="/usr/local/src/web/frontend"
-SERVER_PORT=8082
+# 加载配置文件
+CONFIG_FILE="$(dirname "$0")/deploy.config"
 
-# 本地路径
-LOCAL_BACKEND_DIR="/Users/piheqi/IdeaProjects/slimming/backend"
-LOCAL_FRONTEND_DIR="/Users/piheqi/IdeaProjects/slimming/frontend"
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo -e "${RED}[错误]${NC} 配置文件不存在: $CONFIG_FILE"
+    echo -e "${YELLOW}请复制 deploy.config.example 为 deploy.config 并填入真实配置${NC}"
+    echo -e "${YELLOW}命令: cp deploy.config.example deploy.config${NC}"
+    exit 1
+fi
+
+# 读取配置文件
+source "$CONFIG_FILE"
+
+# 验证必需配置
+if [ -z "$SERVER_IP" ] || [ -z "$SERVER_USER" ]; then
+    echo -e "${RED}[错误]${NC} 配置文件缺少必需参数"
+    echo -e "${YELLOW}请检查 deploy.config 中的 SERVER_IP 和 SERVER_USER${NC}"
+    exit 1
+fi
 
 # 打印带颜色的消息
 print_info() {

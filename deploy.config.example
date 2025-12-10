@@ -1,0 +1,15 @@
+# 部署配置文件示例
+# 使用时请复制此文件为 deploy.config 并填入真实信息
+# 注意：deploy.config 已在 .gitignore 中，不会被提交到 Git
+
+# 服务器配置
+SERVER_IP="your.server.ip"
+SERVER_USER="your_username"
+SERVER_PASSWORD="your_password"
+SERVER_BACKEND_DIR="/usr/local/src/web/backend"
+SERVER_FRONTEND_DIR="/usr/local/src/web/frontend"
+SERVER_PORT=8082
+
+# 本地路径（根据实际情况修改）
+LOCAL_BACKEND_DIR="./backend"
+LOCAL_FRONTEND_DIR="./frontend"

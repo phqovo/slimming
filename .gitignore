@@ -27,6 +27,7 @@ dist-ssr/
 backend/.env
 frontend/.env
 frontendH5/.env
+deploy.config
 
 # Uploads
 backend/uploads/*
