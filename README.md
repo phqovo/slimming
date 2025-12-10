@@ -283,15 +283,15 @@ Authorization: Bearer <token>
 MIT License
 
 ### 页面截图
-<img width="1915" height="1032" alt="sy1" src="https://github.com/user-attachments/assets/2ede98a9-45b8-4cbf-9252-e7eca159e558" />
-<img width="1920" height="958" alt="xq" src="https://github.com/user-attachments/assets/a67bb0fb-ce08-4936-9f5d-f2d2c6670a12" />
-<img width="1920" height="958" alt="sy" src="https://github.com/user-attachments/assets/78e116d2-1cc7-404d-814b-2b6ba5a89593" />
-<img width="1920" height="958" alt="rl" src="https://github.com/user-attachments/assets/b8260ae2-2cf2-475e-8ca5-4e5dd5644237" />
-<img width="1920" height="958" alt="fx" src="https://github.com/user-attachments/assets/cc0cb7ff-fefe-4fa6-846c-0c1cb2a4de85" />
-<img width="1920" height="958" alt="ai" src="https://github.com/user-attachments/assets/ba973f84-8752-4887-92d2-6d7a6259014f" />
-<img width="1920" height="958" alt="拉取" src="https://github.com/user-attachments/assets/7984d132-143e-4454-a39d-54549743f5bd" />
-<img width="1920" height="958" alt="榜单" src="https://github.com/user-attachments/assets/17216fbd-5188-42ca-84a3-b27f17f924fc" />
-<img width="1920" height="958" alt="趋势" src="https://github.com/user-attachments/assets/39866470-a5f9-460f-a315-627f02cd439c" />
+<img width="1915" height="1032" alt="sy1" src="https://image.piheqi.com/uPic/sy1.png" />
+<img width="1920" height="958" alt="xq" src="https://image.piheqi.com/uPic/xq.png" />
+<img width="1920" height="958" alt="sy" src="https://image.piheqi.com/uPic/sy.png" />
+<img width="1920" height="958" alt="rl" src="https://image.piheqi.com/uPic/rl.png" />
+<img width="1920" height="958" alt="fx" src="https://image.piheqi.com/uPic/fx.png" />
+<img width="1920" height="958" alt="ai" src="https://image.piheqi.com/uPic/ai.png" />
+<img width="1920" height="958" alt="拉取" src="https://image.piheqi.com/uPic/拉取.png" />
+<img width="1920" height="958" alt="榜单" src="https://image.piheqi.com/uPic/榜单.png" />
+<img width="1920" height="958" alt="趋势" src="https://image.piheqi.com/uPic/趋势.png" />
 
 
 
