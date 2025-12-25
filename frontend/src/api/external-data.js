@@ -9,3 +9,13 @@ export const getExternalDataList = (params) => {
 export const getLatestWeightData = (params) => {
   return request.get('/external-data/latest-weight', { params })
 }
+
+// 获取体重记录详情
+export const getWeightDetail = (recordId) => {
+  return request.get(`/external-data/weight/${recordId}`)
+}
+
+// 删除外部数据记录
+export const deleteExternalRecord = (dataType, recordId) => {
+  return request.delete(`/external-data/${dataType}/${recordId}`)
+}

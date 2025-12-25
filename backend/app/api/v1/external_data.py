@@ -144,6 +144,9 @@ async def get_external_data_list(
     # 构建查询
     query = db.query(model).filter(model.user_id == current_user.id)
     
+    # 过滤已删除的数据
+    query = query.filter(model.is_deleted == False)
+    
     # 数据来源筛选
     if data_source:
         query = query.filter(model.data_source == data_source)
@@ -238,6 +241,7 @@ async def get_external_data_list(
                 'visceral_fat': float(item.visceral_fat) if item.visceral_fat else None,
                 'body_age': item.body_age,
                 'body_score': item.body_score,
+                'fat_mass': float(item.fat_mass) if item.fat_mass else None,
                 'note': item.note
             })
         elif data_type == 'steps':
@@ -257,4 +261,126 @@ async def get_external_data_list(
         "page_size": page_size,
         "total_pages": math.ceil(total / page_size) if total > 0 else 0,
         "items": items_data
+    }
+
+
+@router.get("/weight/{record_id}", summary="获取体重记录详情")
+async def get_weight_detail(
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    获取单条体重记录的完整详情
+    """
+    record = db.query(ExternalWeightRecord).filter(
+        ExternalWeightRecord.id == record_id,
+        ExternalWeightRecord.user_id == current_user.id
+    ).first()
+    
+    if not record:
+        return {"code": 404, "message": "记录不存在"}
+    
+    # 返回完整的体重数据
+    return {
+        "code": 200,
+        "data": {
+            'id': record.id,
+            'measure_date': record.measure_date,
+            'measure_time': record.measure_time,
+            # 基础指标
+            'weight': float(record.weight) if record.weight else None,
+            'bmi': float(record.bmi) if record.bmi else None,
+            'body_fat': float(record.body_fat) if record.body_fat else None,
+            'muscle_mass': float(record.muscle_mass) if record.muscle_mass else None,
+            'bone_mass': float(record.bone_mass) if record.bone_mass else None,
+            'water': float(record.water) if record.water else None,
+            'protein': float(record.protein) if record.protein else None,
+            'bmr': record.bmr,
+            'visceral_fat': float(record.visceral_fat) if record.visceral_fat else None,
+            'body_age': record.body_age,
+            'body_score': record.body_score,
+            'heart_rate': record.heart_rate,
+            'whr': float(record.whr) if record.whr else None,
+            'fat_mass': float(record.fat_mass) if record.fat_mass else None,
+            # 左下肢
+            'left_lower_limb_fat_mass': float(record.left_lower_limb_fat_mass) if record.left_lower_limb_fat_mass else None,
+            'left_lower_limb_fat_rank': record.left_lower_limb_fat_rank,
+            'left_lower_limb_muscle_mass': float(record.left_lower_limb_muscle_mass) if record.left_lower_limb_muscle_mass else None,
+            'left_lower_limb_muscle_rank': record.left_lower_limb_muscle_rank,
+            # 左上肢
+            'left_upper_limb_fat_mass': float(record.left_upper_limb_fat_mass) if record.left_upper_limb_fat_mass else None,
+            'left_upper_limb_fat_rank': record.left_upper_limb_fat_rank,
+            'left_upper_limb_muscle_mass': float(record.left_upper_limb_muscle_mass) if record.left_upper_limb_muscle_mass else None,
+            'left_upper_limb_muscle_rank': record.left_upper_limb_muscle_rank,
+            # 右下肢
+            'right_lower_limb_fat_mass': float(record.right_lower_limb_fat_mass) if record.right_lower_limb_fat_mass else None,
+            'right_lower_limb_fat_rank': record.right_lower_limb_fat_rank,
+            'right_lower_limb_muscle_mass': float(record.right_lower_limb_muscle_mass) if record.right_lower_limb_muscle_mass else None,
+            'right_lower_limb_muscle_rank': record.right_lower_limb_muscle_rank,
+            # 右上肢
+            'right_upper_limb_fat_mass': float(record.right_upper_limb_fat_mass) if record.right_upper_limb_fat_mass else None,
+            'right_upper_limb_fat_rank': record.right_upper_limb_fat_rank,
+            'right_upper_limb_muscle_mass': float(record.right_upper_limb_muscle_mass) if record.right_upper_limb_muscle_mass else None,
+            'right_upper_limb_muscle_rank': record.right_upper_limb_muscle_rank,
+            # 躯干
+            'trunk_fat_mass': float(record.trunk_fat_mass) if record.trunk_fat_mass else None,
+            'trunk_fat_rank': record.trunk_fat_rank,
+            'trunk_muscle_mass': float(record.trunk_muscle_mass) if record.trunk_muscle_mass else None,
+            'trunk_muscle_rank': record.trunk_muscle_rank,
+            # 平衡指标
+            'limbs_fat_balance': record.limbs_fat_balance,
+            'limbs_muscle_balance': record.limbs_muscle_balance,
+            'limbs_skeletal_muscle_index': float(record.limbs_skeletal_muscle_index) if record.limbs_skeletal_muscle_index else None,
+            'lower_limb_fat_balance': record.lower_limb_fat_balance,
+            'lower_limb_muscle_balance': record.lower_limb_muscle_balance,
+            'upper_limb_fat_balance': record.upper_limb_fat_balance,
+            'upper_limb_muscle_balance': record.upper_limb_muscle_balance,
+            # 其他
+            'recommended_calories_intake': record.recommended_calories_intake,
+            'note': record.note
+        }
+    }
+
+
+@router.delete("/{data_type}/{record_id}", summary="删除外部数据记录")
+async def delete_external_record(
+    data_type: str,
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    逻辑删除外部数据记录
+    支持的数据类型：sleep/exercise/weight/steps
+    """
+    # 根据数据类型选择对应的模型
+    model_map = {
+        'sleep': ExternalSleepRecord,
+        'exercise': ExternalExerciseRecord,
+        'weight': ExternalWeightRecord,
+        'steps': ExternalStepRecord
+    }
+    
+    if data_type not in model_map:
+        return {"code": 400, "message": "不支持的数据类型"}
+    
+    model = model_map[data_type]
+    
+    # 查找记录
+    record = db.query(model).filter(
+        model.id == record_id,
+        model.user_id == current_user.id
+    ).first()
+    
+    if not record:
+        return {"code": 404, "message": "记录不存在"}
+    
+    # 逻辑删除
+    record.is_deleted = True
+    db.commit()
+    
+    return {
+        "code": 200,
+        "message": "删除成功"
     }

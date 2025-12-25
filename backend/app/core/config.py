@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     
     # OpenAI配置
     OPENAI_API_KEY: str = ""
+    OPENAI_BASE_URL: str = ""  # 留空则使用官方 API: https://api.openai.com
+    
+    # Google Gemini配置
+    GEMINI_API_KEY: str = ""
+    GEMINI_BASE_URL: str = ""  # 留空则使用官方 API: https://generativelanguage.googleapis.com
     
     # OAuth配置
     WECHAT_APP_ID: str = ""

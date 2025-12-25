@@ -118,7 +118,7 @@ class DataSyncService:
         if not records:
             return 0
         
-        # 批量查询已存在的data_hash
+        # 批量查询已存在的data_hash（包括已删除的）
         data_hashes = [r.get('data_hash') for r in records]
         existing_hashes = set(
             row[0] for row in self.db.query(ExternalSleepRecord.data_hash)
@@ -133,7 +133,7 @@ class DataSyncService:
         
         for record in records:
             try:
-                # 跳过已存在的记录
+                # 跳过已存在的记录（包括已删除的，保持删除状态）
                 if record.get('data_hash') in existing_hashes:
                     continue
                 
@@ -188,7 +188,7 @@ class DataSyncService:
         if not records:
             return 0
         
-        # 批量查询已存在的data_hash
+        # 批量查询已存在的data_hash（包括已删除的）
         data_hashes = [r.get('data_hash') for r in records]
         existing_hashes = set(
             row[0] for row in self.db.query(ExternalExerciseRecord.data_hash)
@@ -203,7 +203,7 @@ class DataSyncService:
         
         for record in records:
             try:
-                # 跳过已存在的记录
+                # 跳过已存在的记录（包括已删除的，保持删除状态）
                 if record.get('data_hash') in existing_hashes:
                     continue
                 
@@ -262,7 +262,7 @@ class DataSyncService:
         if not records:
             return 0
         
-        # 批量查询已存在的data_hash
+        # 批量查询已存在的data_hash（包括已删除的）
         data_hashes = [r.get('data_hash') for r in records]
         existing_hashes = set(
             row[0] for row in self.db.query(ExternalWeightRecord.data_hash)
@@ -373,7 +373,7 @@ class DataSyncService:
         if not records:
             return 0
         
-        # 批量查询已存在的data_hash
+        # 批量查询已存在的data_hash（包括已删除的）
         data_hashes = [r.get('data_hash') for r in records]
         existing_hashes = set(
             row[0] for row in self.db.query(ExternalStepRecord.data_hash)
@@ -388,7 +388,7 @@ class DataSyncService:
         
         for record in records:
             try:
-                # 跳过已存在的记录
+                # 跳过已存在的记录（包括已删除的，保持删除状态）
                 if record.get('data_hash') in existing_hashes:
                     continue
                 

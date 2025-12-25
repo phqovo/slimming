@@ -1,5 +1,5 @@
 """外部数据模型"""
-from sqlalchemy import Column, Integer, String, DateTime, Date, DECIMAL, Text, JSON, Index
+from sqlalchemy import Column, Integer, String, DateTime, Date, DECIMAL, Text, JSON, Index, Boolean
 from sqlalchemy.sql import func
 from app.core.database import Base
 
@@ -23,12 +23,14 @@ class ExternalSleepRecord(Base):
     awake_time = Column(Integer, comment='清醒时长（分钟）')
     sleep_score = Column(Integer, comment='睡眠评分')
     raw_data = Column(JSON, comment='原始数据')
+    is_deleted = Column(Boolean, nullable=False, default=False, comment='逻辑删除标记')
     created_at = Column(DateTime, server_default=func.now(), comment='创建时间')
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), comment='更新时间')
 
     __table_args__ = (
         Index('idx_user_date', 'user_id', 'sleep_date'),
         Index('idx_user_source', 'user_id', 'data_source'),
+        Index('idx_is_deleted', 'is_deleted'),
     )
 
 
@@ -52,12 +54,14 @@ class ExternalExerciseRecord(Base):
     avg_heart_rate = Column(Integer, comment='平均心率')
     max_heart_rate = Column(Integer, comment='最大心率')
     raw_data = Column(JSON, comment='原始数据')
+    is_deleted = Column(Boolean, nullable=False, default=False, comment='逻辑删除标记')
     created_at = Column(DateTime, server_default=func.now(), comment='创建时间')
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), comment='更新时间')
 
     __table_args__ = (
         Index('idx_user_date', 'user_id', 'exercise_date'),
         Index('idx_user_source', 'user_id', 'data_source'),
+        Index('idx_is_deleted', 'is_deleted'),
     )
 
 
@@ -118,12 +122,14 @@ class ExternalWeightRecord(Base):
     upper_limb_muscle_balance = Column(Integer, comment='上肢肌肉平衡')
     note = Column(String(500), comment='备注')
     raw_data = Column(JSON, comment='原始数据')
+    is_deleted = Column(Boolean, nullable=False, default=False, comment='逻辑删除标记')
     created_at = Column(DateTime, server_default=func.now(), comment='创建时间')
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), comment='更新时间')
 
     __table_args__ = (
         Index('idx_user_date', 'user_id', 'measure_date'),
         Index('idx_user_source', 'user_id', 'data_source'),
+        Index('idx_is_deleted', 'is_deleted'),
     )
 
 
@@ -142,10 +148,12 @@ class ExternalStepRecord(Base):
     calories = Column(Integer, comment='消耗卡路里')
     active_time = Column(Integer, comment='活跃时长（分钟）')
     raw_data = Column(JSON, comment='原始数据')
+    is_deleted = Column(Boolean, nullable=False, default=False, comment='逻辑删除标记')
     created_at = Column(DateTime, server_default=func.now(), comment='创建时间')
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), comment='更新时间')
 
     __table_args__ = (
         Index('idx_user_date', 'user_id', 'step_date'),
         Index('idx_user_source', 'user_id', 'data_source'),
+        Index('idx_is_deleted', 'is_deleted'),
     )

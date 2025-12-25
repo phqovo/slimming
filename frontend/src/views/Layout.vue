@@ -86,6 +86,10 @@
               <el-icon><Setting /></el-icon>
               <span>数据拉取配置</span>
             </el-menu-item>
+            <el-menu-item index="/api-tester">
+              <el-icon><Tools /></el-icon>
+              <span>API 测试工具</span>
+            </el-menu-item>
           </el-menu>
         </el-aside>
 
@@ -108,7 +112,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useSettingsStore } from '@/stores/settings'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { House, TrendCharts, User, DocumentCopy, ArrowDown, Food, Notebook, PieChart, ChatDotRound, TrophyBase, Lock, DataAnalysis, Setting } from '@element-plus/icons-vue'
+import { House, TrendCharts, User, DocumentCopy, ArrowDown, Food, Notebook, PieChart, ChatDotRound, TrophyBase, Lock, DataAnalysis, Setting, Tools } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
