@@ -8,11 +8,11 @@
         <div class="header-actions">
           <!-- 模型切换 -->
           <el-radio-group v-model="aiProvider" size="small" class="model-switch">
-            <el-radio-button label="gemini">
-              <span class="model-label">🤖 Gemini</span>
-            </el-radio-button>
             <el-radio-button label="openai">
               <span class="model-label">🤖 ChatGPT</span>
+            </el-radio-button>
+            <el-radio-button label="gemini">
+              <span class="model-label">🤖 Gemini</span>
             </el-radio-button>
           </el-radio-group>
           <el-button 
@@ -150,12 +150,12 @@ const loading = ref(false)
 // 用于中止请求的 AbortController
 let abortController = null
 
-// AI 服务提供商（默认使用 Gemini）
-const aiProvider = ref('gemini')
+// AI 服务提供商（默认使用 ChatGPT）
+const aiProvider = ref('openai')
 
 // 模型配置
 const modelConfig = {
-  gemini: 'gemini-2.0-flash-lite',
+  gemini: 'gemini-2.0-flash',
   openai: 'gpt-4o-mini'
 }
 

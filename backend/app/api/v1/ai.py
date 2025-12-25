@@ -22,7 +22,7 @@ async def chat_completions(
     
     请求示例：
     {
-        "model": "gpt-3.5-turbo" 或 "gemini-2.0-flash-lite",
+        "model": "gpt-4o-mini" 或 "gemini-2.0-flash",
         "provider": "openai" 或 "gemini",  // 可选，优先从 model 名推断
         "messages": [
             {"role": "user", "content": "你好"}
@@ -146,7 +146,7 @@ async def _handle_gemini_request(request_data: dict, settings):
             })
     
     # 准备 Gemini 请求数据
-    model = request_data.get("model", "gemini-2.0-flash-lite")
+    model = request_data.get("model", "gemini-2.0-flash")
     payload = {
         "contents": gemini_contents,
         "generationConfig": {
