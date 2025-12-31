@@ -21,11 +21,20 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200
     
-    # 短信配置（短信宝）
+    # 短信配置
+    SMS_PROVIDER: str = "aliyun"  # 短信服务提供商: aliyun=阿里云通信号码认证, smsbao=短信宝
+    SMS_DEBUG_MODE: bool = False  # True=调试模式（不发短信）, False=正常模式
+
+    # 阿里云通信号码认证服务配置
+    ALIYUN_ACCESS_KEY_ID: str = ""
+    ALIYUN_ACCESS_KEY_SECRET: str = ""
+    ALIYUN_SMS_SIGN_NAME: str = ""  # 短信签名
+    ALIYUN_SMS_TEMPLATE_CODE: str = ""  # 验证码模板CODE
+
+    # 短信宝配置（备用）
     SMS_USERNAME: str = ""
     SMS_PASSWORD: str = ""  # MD5后的密码或ApiKey
     SMS_SIGN: str = "【短信宝】"  # 短信签名
-    SMS_DEBUG_MODE: bool = True  # True=调试模式（不发短信）, False=正常模式
     
     # 应用配置
     APP_HOST: str = "0.0.0.0"

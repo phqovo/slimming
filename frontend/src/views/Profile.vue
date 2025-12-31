@@ -573,8 +573,13 @@ const sendCode = async () => {
   
   try {
     sendingCode.value = true
-    await sendBindSmsCode(bindPhoneForm.value.phone)
-    ElMessage.success('验证码发送成功')
+    const res = await sendBindSmsCode(bindPhoneForm.value.phone)
+    // 获取短信签名
+    const smsSign = res.data?.sms_sign || '平台'
+    ElMessage.success({
+      message: `验证码发送成功，请留意签名为【${smsSign}】的验证码短信`,
+      duration: 5000  // 显示5秒
+    })
     
     // 开始倒计时
     countdown.value = 60
@@ -586,6 +591,14 @@ const sendCode = async () => {
     }, 1000)
   } catch (error) {
     console.error('发送验证码失败:', error)
+    // 显示错误信息
+    if (error.response?.data?.detail) {
+      ElMessage.error(error.response.data.detail)
+    } else if (error.message) {
+      ElMessage.error(error.message)
+    } else {
+      ElMessage.error('发送验证码失败，请稍后重试')
+    }
   } finally {
     sendingCode.value = false
   }

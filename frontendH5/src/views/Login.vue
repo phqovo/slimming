@@ -68,8 +68,13 @@ const sendCode = async () => {
   }
 
   try {
-    await sendVerificationCode({ phone: formData.value.phone })
-    showToast('验证码已发送')
+    const res = await sendVerificationCode({ phone: formData.value.phone })
+    // 获取短信签名
+    const smsSign = res.data?.sms_sign || '平台'
+    showToast({
+      message: `验证码发送成功，请留意签名为【${smsSign}】的验证码短信`,
+      duration: 5000  // 显示5秒
+    })
     countdown.value = 60
     
     const timer = setInterval(() => {
@@ -79,7 +84,9 @@ const sendCode = async () => {
       }
     }, 1000)
   } catch (error) {
-    showToast(error.response?.data?.detail || '发送失败')
+    // 显示错误信息
+    const errorMsg = error.response?.data?.detail || error.message || '发送失败'
+    showToast(errorMsg)
   }
 }
 

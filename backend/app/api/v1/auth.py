@@ -8,7 +8,7 @@ from app.models.user import User
 from app.schemas.user import (
     SendCodeRequest, LoginRequest, LoginResponse, UserResponse
 )
-from app.utils.sms import generate_verification_code, save_verification_code, verify_code, send_sms_code
+from app.utils.sms import generate_verification_code, save_verification_code, verify_code, send_sms_code, SMSLimitExceededError
 from datetime import timedelta
 
 router = APIRouter()
@@ -20,22 +20,37 @@ async def send_code(request: SendCodeRequest):
     """发送短信验证码"""
     # 生成验证码
     code = generate_verification_code()
-    
+
     # 保存到Redis，5分钟过期
     save_verification_code(request.phone, code, expire=300)
-    
+
     # 发送短信
-    sms_result = await send_sms_code(request.phone, code)
-    
-    return {
-        "code": 200,
-        "message": "验证码发送成功",
-        "data": {
-            "code": code if (settings.DEBUG or settings.SMS_DEBUG_MODE) else None,  # 调试模式返回验证码
-            "debug_mode": settings.SMS_DEBUG_MODE,  # 是否调试模式
-            "sms_sent": sms_result  # 是否真实发送短信
+    try:
+        sms_result = await send_sms_code(request.phone, code)
+
+        # 获取短信签名
+        sms_sign = ""
+        if settings.SMS_PROVIDER.lower() == 'aliyun':
+            sms_sign = settings.ALIYUN_SMS_SIGN_NAME
+        elif settings.SMS_PROVIDER.lower() == 'smsbao':
+            sms_sign = settings.SMS_SIGN
+
+        return {
+            "code": 200,
+            "message": "验证码发送成功",
+            "data": {
+                "code": code if (settings.DEBUG or settings.SMS_DEBUG_MODE) else None,  # 调试模式返回验证码
+                "debug_mode": settings.SMS_DEBUG_MODE,  # 是否调试模式
+                "sms_sent": sms_result,  # 是否真实发送短信
+                "sms_sign": sms_sign  # 短信签名
+            }
         }
-    }
+    except SMSLimitExceededError as e:
+        # 抛出HTTP异常,让前端能正确捕获错误
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"今日发送次数已达上限（{e.limit}次），请明天再试"
+        )
 
 
 @router.post("/login", summary="登录/注册")

@@ -49,6 +49,11 @@ request.interceptors.response.use(
         return Promise.reject(error)
       }
       
+      // 429 状态码（请求过多）由组件自己处理，不在拦截器中显示
+      if (status === 429) {
+        return Promise.reject(error)
+      }
+      
       if (status === 401) {
         ElMessage.error('登录已过期，请重新登录')
         localStorage.removeItem('token')

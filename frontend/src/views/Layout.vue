@@ -86,10 +86,6 @@
               <el-icon><Setting /></el-icon>
               <span>数据拉取配置</span>
             </el-menu-item>
-            <el-menu-item index="/api-tester">
-              <el-icon><Tools /></el-icon>
-              <span>API 测试工具</span>
-            </el-menu-item>
           </el-menu>
         </el-aside>
 
