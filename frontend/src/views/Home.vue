@@ -57,38 +57,25 @@
       </div>
     </el-card>
 
-    <!-- 激励信息 -->
-    <el-card v-if="encouragementMessage" class="encouragement-card rounded-card" shadow="never">
-      <div class="encouragement-content">
-        <el-icon class="trophy-icon"><trophy /></el-icon>
-        <div class="encouragement-text">
-          {{ encouragementMessage }}
-        </div>
-      </div>
-    </el-card>
-
-    <!-- 快捷操作 -->
-    <div class="quick-actions">
-      <el-button type="primary" :icon="TrendCharts" @click="showWeightDialog = true" round>
-        记录体重
-      </el-button>
-      <el-button type="success" :icon="Trophy" @click="showExerciseDialog = true" round>
-        运动打卡
-      </el-button>
-      <el-button type="warning" :icon="Apple" @click="showDietDialog = true" round>
-        饮食记录
-      </el-button>
-    </div>
-
-    <!-- 今日数据 -->
+    <!-- 今日数据：左右布局 -->
     <el-row :gutter="24" class="today-data">
-      <!-- 饮食记录 -->
-      <el-col :span="12">
-        <el-card class="data-card rounded-card" shadow="never">
+      <!-- 左侧：快捷操作 + 今日饮食 -->
+      <el-col :span="12" class="column-flex">
+        <el-card class="data-card rounded-card diet-card" shadow="never">
           <template #header>
             <div class="card-header">
               <span><el-icon><Apple /></el-icon> 今日饮食</span>
-              <el-button text type="primary" @click="showDietDialog = true">添加</el-button>
+              <div class="header-actions">
+                <el-button type="primary" :icon="TrendCharts" @click="showWeightDialog = true" round>
+                  记录体重
+                </el-button>
+                <el-button type="success" :icon="Trophy" @click="showExerciseDialog = true" round>
+                  运动打卡
+                </el-button>
+                <el-button type="warning" :icon="Apple" @click="showDietDialog = true" round>
+                  饮食记录
+                </el-button>
+              </div>
             </div>
           </template>
           <div class="diet-content">
@@ -127,9 +114,89 @@
         </el-card>
       </el-col>
 
-      <!-- 运动记录 -->
-      <el-col :span="12">
-        <el-card class="data-card rounded-card" shadow="never">
+      <!-- 右侧：睡眠+饮水（一行）和运动（单独一行） -->
+      <el-col :span="12" class="column-flex">
+        <!-- 睡眠和饮水一行 -->
+        <el-row :gutter="24" class="equal-height-row">
+          <!-- 睡眠记录 -->
+          <el-col :span="12">
+            <el-card class="data-card rounded-card small-card" shadow="never">
+              <template #header>
+                <div class="card-header">
+                  <span><el-icon><Moon /></el-icon> 昨夜睡眠</span>
+                  <el-button text type="primary" @click="showSleepDialog = true">
+                    {{ todaySleep ? '编辑' : '添加' }}
+                  </el-button>
+                </div>
+              </template>
+              <div class="sleep-content">
+                <div v-if="todaySleep" class="sleep-info">
+                  <div class="sleep-main">
+                    <div class="sleep-duration">
+                      <div class="duration-value">{{ formatSleepDuration(todaySleep.duration) }}</div>
+                      <div class="duration-unit">小时</div>
+                    </div>
+                    <div class="sleep-quality" v-if="todaySleep.quality">
+                      <el-tag :type="getSleepQualityType(todaySleep.quality)" size="large">
+                        {{ getSleepQualityText(todaySleep.quality) }}
+                      </el-tag>
+                    </div>
+                  </div>
+                  <div class="sleep-times" v-if="todaySleep.sleep_time || todaySleep.wake_time">
+                    <div class="time-item" v-if="todaySleep.sleep_time">
+                      <span class="label">入睡</span>
+                      <span class="value">{{ formatTime(todaySleep.sleep_time) }}</span>
+                    </div>
+                    <div class="time-divider" v-if="todaySleep.sleep_time && todaySleep.wake_time"></div>
+                    <div class="time-item" v-if="todaySleep.wake_time">
+                      <span class="label">醒来</span>
+                      <span class="value">{{ formatTime(todaySleep.wake_time) }}</span>
+                    </div>
+                  </div>
+                </div>
+                <el-empty v-else description="暂无睡眠记录" :image-size="80" />
+              </div>
+            </el-card>
+          </el-col>
+
+          <!-- 饮水记录 -->
+          <el-col :span="12">
+            <el-card class="data-card rounded-card small-card" shadow="never">
+              <template #header>
+                <div class="card-header">
+                  <span><el-icon><Coffee /></el-icon> 今日饮水</span>
+                </div>
+              </template>
+              <div class="water-content">
+                <div class="water-progress">
+                  <el-progress 
+                    type="circle" 
+                    :percentage="waterPercentage" 
+                    :width="100"
+                    :stroke-width="10"
+                    color="#409eff"
+                  >
+                    <template #default>
+                      <div class="progress-text">
+                        <div class="amount">{{ totalWater }}</div>
+                        <div class="unit">ml</div>
+                      </div>
+                    </template>
+                  </el-progress>
+                </div>
+                <div class="water-actions">
+                  <el-button @click="addWater(100)" size="small">+100ml</el-button>
+                  <el-button @click="addWater(200)" size="small">+200ml</el-button>
+                  <el-button @click="addWater(500)" size="small">+500ml</el-button>
+                  <el-button @click="addWater(1000)" size="small">+1L</el-button>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <!-- 运动记录单独一行 -->
+        <el-card class="data-card rounded-card exercise-card" shadow="never">
           <template #header>
             <div class="card-header">
               <span><el-icon><Trophy /></el-icon> 今日运动</span>
@@ -154,82 +221,6 @@
               </div>
             </div>
             <el-empty v-else description="暂无运动记录" :image-size="100" />
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 健康数据 -->
-    <el-row :gutter="24">
-      <!-- 饮水记录 -->
-      <el-col :span="12">
-        <el-card class="data-card rounded-card" shadow="never">
-          <template #header>
-            <div class="card-header">
-              <span><el-icon><Coffee /></el-icon> 今日饮水</span>
-            </div>
-          </template>
-          <div class="water-content">
-            <div class="water-progress">
-              <el-progress 
-                type="circle" 
-                :percentage="waterPercentage" 
-                :width="120"
-                :stroke-width="12"
-                color="#409eff"
-              >
-                <template #default>
-                  <div class="progress-text">
-                    <div class="amount">{{ totalWater }}</div>
-                    <div class="unit">ml</div>
-                  </div>
-                </template>
-              </el-progress>
-            </div>
-            <div class="water-actions">
-              <el-button @click="addWater(200)" size="small">+200ml</el-button>
-              <el-button @click="addWater(500)" size="small">+500ml</el-button>
-              <el-button @click="showWaterDialog = true" size="small">自定义</el-button>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-
-      <!-- 睡眠记录 -->
-      <el-col :span="12">
-        <el-card class="data-card rounded-card" shadow="never">
-          <template #header>
-            <div class="card-header">
-              <span><el-icon><Moon /></el-icon> 昨夜睡眠</span>
-              <el-button text type="primary" @click="showSleepDialog = true">
-                {{ todaySleep ? '编辑' : '添加' }}
-              </el-button>
-            </div>
-          </template>
-          <div class="sleep-content">
-            <div v-if="todaySleep" class="sleep-info">
-              <div class="sleep-duration">
-                <div class="duration-value">{{ formatSleepDuration(todaySleep.duration) }}</div>
-                <div class="duration-unit">小时</div>
-              </div>
-              <div class="sleep-time-range" v-if="todaySleep.sleep_time && todaySleep.wake_time">
-                <div class="time-item">
-                  <span class="time-label">入睡</span>
-                  <span class="time-value">{{ formatSleepTime(todaySleep.sleep_time) }}</span>
-                </div>
-                <div class="time-separator">~</div>
-                <div class="time-item">
-                  <span class="time-label">醒来</span>
-                  <span class="time-value">{{ formatSleepTime(todaySleep.wake_time) }}</span>
-                </div>
-              </div>
-              <div class="sleep-quality" v-if="todaySleep.quality">
-                <el-tag :type="getSleepQualityType(todaySleep.quality)" size="large">
-                  {{ getSleepQualityText(todaySleep.quality) }}
-                </el-tag>
-              </div>
-            </div>
-            <el-empty v-else description="暂无睡眠记录" :image-size="100" />
           </div>
         </el-card>
       </el-col>
@@ -260,7 +251,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useSettingsStore } from '@/stores/settings'
-import { getUserStats, getWeightProgress } from '@/api/user'
+import { getUserStats } from '@/api/user'
 import { getExerciseRecords, getDietRecords } from '@/api/health'
 import { getWaterRecords, getSleepRecords, createWaterRecord } from '@/api/health'
 import { ElMessage } from 'element-plus'
@@ -279,11 +270,12 @@ const router = useRouter()
 const dietDialogRef = ref(null)
 
 const stats = ref({})
-const progress = ref({})  // 新增：进度信息
 const todayExercise = ref([])
 const todayDiet = ref({})
 const totalWater = ref(0)
 const todaySleep = ref(null)
+
+const progress = computed(() => userStore.weightProgress || {})
 
 const showWeightDialog = ref(false)
 const showExerciseDialog = ref(false)
@@ -345,51 +337,6 @@ const hasIncompleteProfile = computed(() => {
   )
 })
 
-// 激励信息
-const encouragementMessage = computed(() => {
-  if (!progress.value || progress.value.weight_lost === null || progress.value.weight_lost === undefined) {
-    return ''
-  }
-  
-  const weightLost = progress.value.weight_lost
-  const weightToGoal = progress.value.weight_to_goal
-  const daysElapsed = progress.value.days_elapsed || 0
-  const estimatedDays = progress.value.estimated_days_to_goal
-  
-  // 转换为显示单位
-  const displayWeightLost = settingsStore.convertWeightToDisplay(Math.abs(weightLost))
-  const displayWeightToGoal = weightToGoal ? settingsStore.convertWeightToDisplay(Math.abs(weightToGoal)) : 0
-  const unit = settingsStore.getWeightUnitText()
-  
-  if (weightLost > 0) {
-    // 减重成功
-    if (weightToGoal && weightToGoal <= 0) {
-      return `🎉 太棒啦！你已经达成目标，成功减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天！`
-    } else if (weightToGoal) {
-      // 基础消息
-      let message = `👏 太棒啦！你已经减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天，距离目标还有 ${displayWeightToGoal} ${unit}`
-      // 如果有预计天数，添加到消息中
-      if (estimatedDays && estimatedDays > 0) {
-        message += `，大约还需要 ${estimatedDays} 天`
-      }
-      message += '！'
-      return message
-    } else {
-      return `💪 加油！你已经减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天，继续加油！`
-    }
-  } else if (weightLost < 0) {
-    // 体重增加
-    return `⚠️ 注意！相比最初体重增加了 ${displayWeightLost} ${unit}，别气馁，从现在开始努力！`
-  } else {
-    // 体重未变化
-    if (daysElapsed > 7) {
-      return `🤔 体重 ${daysElapsed} 天没有变化，试试调整饮食和运动计划吧！`
-    } else {
-      return `👍 保持当前状态，坚持就是胜利！`
-    }
-  }
-})
-
 // 加载统计数据
 const loadStats = async () => {
   try {
@@ -397,16 +344,6 @@ const loadStats = async () => {
     stats.value = res.data
   } catch (error) {
     console.error('加载统计数据失败:', error)
-  }
-}
-
-// 加载进度信息
-const loadProgress = async () => {
-  try {
-    const res = await getWeightProgress()
-    progress.value = res.data
-  } catch (error) {
-    console.error('加载进度信息失败:', error)
   }
 }
 
@@ -520,15 +457,15 @@ const getSleepQualityText = (quality) => {
   return map[quality] || quality
 }
 
-// 格式化睡眠时长（保疙2位小数）
+// 格式化睡眠时长（保留2位小数）
 const formatSleepDuration = (duration) => {
   if (!duration) return '0.00'
   return parseFloat(duration).toFixed(2)
 }
 
-// 格式化睡眠时间（显示时:分）
-const formatSleepTime = (timeStr) => {
-  if (!timeStr) return '--'
+// 格式化时间
+const formatTime = (timeStr) => {
+  if (!timeStr) return '--:--'
   return dayjs(timeStr).format('HH:mm')
 }
 
@@ -545,7 +482,6 @@ const loadData = async () => {
   }
   
   loadStats()
-  loadProgress()  // 新增：加载进度信息
   loadTodayExercise()
   loadTodayDiet()
   loadTodayWater()
@@ -688,45 +624,49 @@ onMounted(() => {
   color: #f56c6c;
 }
 
-/* 激励卡片（柔和的渐变色） */
-.encouragement-card {
-  margin-bottom: 24px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-  border: 1px solid #e8eaf6;
-}
-
-.encouragement-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 0;
-}
-
-.trophy-icon {
-  font-size: 42px;
-  color: #ff9800;
-}
-
-.encouragement-text {
-  flex: 1;
-  font-size: 16px;
-  font-weight: 500;
-  color: #5e35b1;
-  line-height: 1.6;
-}
-
-.quick-actions {
-  margin-bottom: 24px;
+.header-actions {
   display: flex;
   gap: 16px;
 }
 
 .today-data {
   margin-bottom: 24px;
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  /* 设置最小高度，使其接近屏幕底部 */
+  min-height: calc(100vh - 420px);
+}
+
+.column-flex {
+  display: flex;
+  flex-direction: column;
 }
 
 .data-card {
   margin-bottom: 24px;
+}
+
+/* 让饮食卡片填满剩余空间 */
+.diet-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 让运动卡片填满剩余空间 */
+.exercise-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 确保卡片内容区域也是 Flex 布局 */
+.data-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .card-header {
@@ -734,6 +674,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   font-weight: 500;
+  height: 32px; /* 强制统一高度，与按钮高度一致 */
 }
 
 .card-header span {
@@ -743,7 +684,9 @@ onMounted(() => {
 }
 
 .diet-content {
-  min-height: 400px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px; /* 基础高度 */
 }
 
 .meal-section {
@@ -846,7 +789,9 @@ onMounted(() => {
 }
 
 .exercise-content {
-  min-height: 400px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
 }
 
 .exercise-list {
@@ -923,10 +868,56 @@ onMounted(() => {
 .sleep-info {
   text-align: center;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.sleep-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .sleep-duration {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+}
+
+.sleep-times {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9ff;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-top: 16px;
+  gap: 24px;
+}
+
+.time-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.time-item .label {
+  font-size: 12px;
+  color: #999;
+}
+
+.time-item .value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  font-family: 'DIN Alternate', sans-serif;
+}
+
+.time-divider {
+  width: 1px;
+  height: 24px;
+  background: #e0e0e0;
 }
 
 .duration-value {
@@ -977,5 +968,71 @@ onMounted(() => {
 
 .sleep-quality {
   margin-top: 12px;
+}
+
+/* 小卡片样式 - 用于睡眠和饮水一行显示 */
+.small-card {
+  min-height: 200px;
+}
+
+.small-card .sleep-content {
+  min-height: 150px;
+}
+
+.small-card .duration-value {
+  font-size: 36px;
+}
+
+.small-card .water-content {
+  padding: 10px 0;
+  gap: 16px;
+}
+
+.small-card .water-progress .progress-text .amount {
+  font-size: 24px;
+}
+
+.small-card .water-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 12px;
+  width: 100%;
+  padding: 0 12px;
+}
+
+.small-card .water-actions .el-button {
+  width: 100%;
+  margin-left: 0;
+}
+
+/* 等高行样式 - 确保睡眠和饮水卡片高度一致 */
+.equal-height-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.equal-height-row .el-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.equal-height-row .small-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.equal-height-row .small-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 让内容垂直居中 */
+.equal-height-row .small-card .sleep-content,
+.equal-height-row .small-card .water-content {
+  flex: 1;
+  justify-content: center;
 }
 </style>

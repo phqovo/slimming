@@ -210,13 +210,12 @@ async def get_weight_trend(
 ):
     """获取体重趋势数据"""
     try:
-        start_date = date.today() - timedelta(days=days)
-        
-        # 获取体重记录
-        records = db.query(WeightRecord).filter(
-            WeightRecord.user_id == current_user.id,
-            WeightRecord.record_date >= start_date
-        ).order_by(WeightRecord.record_date.asc()).all()
+        # 支持返回全部记录：当 days <= 0 时不做日期限制
+        query = db.query(WeightRecord).filter(WeightRecord.user_id == current_user.id)
+        if days and days > 0:
+            start_date = date.today() - timedelta(days=days)
+            query = query.filter(WeightRecord.record_date >= start_date)
+        records = query.order_by(WeightRecord.record_date.asc()).all()
         
         data = [{
             "record_date": r.record_date.strftime("%Y-%m-%d"),

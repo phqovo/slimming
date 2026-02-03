@@ -54,7 +54,8 @@ const days = ref(30)
 const dayOptions = [
   { text: '最近7天', value: 7 },
   { text: '最近30天', value: 30 },
-  { text: '最近90天', value: 90 }
+  { text: '最近90天', value: 90 },
+  { text: '全部', value: -1 }
 ]
 
 const weightChart = ref(null)
@@ -84,7 +85,8 @@ const fetchData = async () => {
     // 获取体重趋势
     const weightRes = await getWeightTrend({ days: days.value })
     weightData.value = weightRes.data || []
-    currentWeight.value = weightRes.current_weight
+    // 优先使用趋势数据的最后一条作为当前体重，保证与图表一致
+    currentWeight.value = weightData.value.length ? weightData.value[weightData.value.length - 1].weight : weightRes.current_weight
     targetWeight.value = weightRes.target_weight
     
     // 获取热量趋势

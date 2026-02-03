@@ -29,9 +29,14 @@ async def get_dashboard(
         today = date.today()
         
         # 获取最新体重记录
+        # 取最新更新的体重记录（优先按记录日期降序，其次按更新时间降序）
         latest_weight = db.query(WeightRecord).filter(
             WeightRecord.user_id == current_user.id
-        ).order_by(desc(WeightRecord.record_date)).first()
+        ).order_by(
+            desc(WeightRecord.record_date),
+            desc(WeightRecord.updated_at),
+            desc(WeightRecord.id)
+        ).first()
         
         # 获取今日饮食记录
         today_diet = db.query(DietRecord).filter(
@@ -80,7 +85,7 @@ async def get_dashboard(
             "today_exercise_calories": round(today_exercise_calories, 1),
             "today_diet_records": diet_records,
             "today_exercise_records": exercise_records
-        }
+          }
         
     except Exception as e:
         print(f"获取首页数据失败: {str(e)}")

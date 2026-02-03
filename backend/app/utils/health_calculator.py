@@ -17,7 +17,9 @@ def calculate_bmi(weight: float, height: float) -> float:
     Returns:
         BMI值
     """
-    if height <= 0:
+    if weight is None or height is None:
+        return 0.0
+    if height <= 0 or weight <= 0:
         return 0.0
     
     height_m = height / 100  # 转换为米
@@ -38,6 +40,8 @@ def calculate_bmr(weight: float, height: float, age: int, gender: str) -> float:
     Returns:
         基础代谢率(kcal/天)
     """
+    if weight is None or height is None or age is None:
+        return 0.0
     if weight <= 0 or height <= 0 or age <= 0:
         return 0.0
     
@@ -77,7 +81,11 @@ def update_user_health_stats(db: Session, user_id: int) -> bool:
         # 获取最新的体重记录
         latest_weight_record = db.query(WeightRecord).filter(
             WeightRecord.user_id == user_id
-        ).order_by(WeightRecord.record_date.desc()).first()
+        ).order_by(
+            WeightRecord.record_date.desc(),
+            WeightRecord.updated_at.desc(),
+            WeightRecord.id.desc()
+        ).first()
         
         if not latest_weight_record:
             # 没有体重记录，清空数据

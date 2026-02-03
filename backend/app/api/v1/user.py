@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 from typing import List, Optional
 from app.core.database import get_db
 from app.models.user import User
+from app.models.weight import WeightRecord
 from app.schemas.user import UserResponse, UserUpdate
 from app.api.deps import get_current_user
 from app.utils.storage import upload_file
@@ -104,17 +106,40 @@ async def get_user_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """获取用户的统计信息（BMI、基础代谢等）直接从用户表读取"""
-    return {
-        "code": 200,
-        "data": {
-            "bmi": current_user.bmi,
-            "bmr": current_user.bmr,
-            "current_weight": current_user.current_weight,
-            "target_weight": current_user.target_weight,
-            "height": current_user.height
+    """获取用户的统计信息（优先使用最新体重记录计算）"""
+    try:
+        # 优先取最新更新的体重记录
+        latest_weight = db.query(WeightRecord).filter(
+            WeightRecord.user_id == current_user.id
+        ).order_by(
+            desc(WeightRecord.record_date),
+            desc(WeightRecord.updated_at),
+            desc(WeightRecord.id)
+        ).first()
+        
+        current_weight = float(latest_weight.weight) if latest_weight else float(current_user.current_weight or 0)
+        
+        # 计算BMI/BMR（如果用户表已有则沿用，否则按最新体重计算）
+        from app.utils.health_calculator import calculate_bmi, calculate_bmr
+        bmi = current_user.bmi
+        bmr = current_user.bmr
+        if current_weight > 0 and (not bmi or bmi <= 0 or not bmr or bmr <= 0):
+            bmi = calculate_bmi(current_weight, current_user.height)
+            bmr = calculate_bmr(current_weight, current_user.height, current_user.age, current_user.gender)
+        
+        return {
+            "code": 200,
+            "data": {
+                "bmi": bmi,
+                "bmr": bmr,
+                "current_weight": current_weight,
+                "target_weight": current_user.target_weight,
+                "height": current_user.height
+            }
         }
-    }
+    except Exception as e:
+        print(f"获取用户统计失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取失败: {str(e)}")
 
 
 @router.get("/progress", summary="获取减肥进度信息")

@@ -7,6 +7,12 @@
           <div class="header-left">
             <h2>体重管理平台</h2>
           </div>
+          
+          <div class="header-center" v-if="encouragementMessage">
+            <el-icon class="trophy-icon-small"><Trophy /></el-icon>
+            <span class="encouragement-text-small">{{ encouragementMessage }}</span>
+          </div>
+
           <div class="header-right">
             <el-dropdown @command="handleCommand">
               <div class="user-info">
@@ -108,7 +114,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useSettingsStore } from '@/stores/settings'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { House, TrendCharts, User, DocumentCopy, ArrowDown, Food, Notebook, PieChart, ChatDotRound, TrophyBase, Lock, DataAnalysis, Setting, Tools } from '@element-plus/icons-vue'
+import { House, TrendCharts, User, DocumentCopy, ArrowDown, Food, Notebook, PieChart, ChatDotRound, TrophyBase, Lock, DataAnalysis, Setting, Tools, Trophy } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -116,6 +122,42 @@ const userStore = useUserStore()
 const settingsStore = useSettingsStore()
 
 const currentRoute = computed(() => route.path)
+
+// 激励信息
+const encouragementMessage = computed(() => {
+  const progress = userStore.weightProgress
+  if (!progress || progress.weight_lost === null || progress.weight_lost === undefined) {
+    return ''
+  }
+  
+  const weightLost = progress.weight_lost
+  const weightToGoal = progress.weight_to_goal
+  const daysElapsed = progress.days_elapsed || 0
+  
+  // 转换为显示单位
+  const displayWeightLost = settingsStore.convertWeightToDisplay(Math.abs(weightLost))
+  const displayWeightToGoal = weightToGoal ? settingsStore.convertWeightToDisplay(Math.abs(weightToGoal)) : 0
+  const unit = settingsStore.getWeightUnitText()
+  
+  if (weightLost > 0) {
+    // 减重成功
+    if (weightToGoal && weightToGoal <= 0) {
+      return `🎉 太棒啦！你已经达成目标，成功减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天！`
+    } else if (weightToGoal) {
+      return `👏 太棒啦！你已经减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天，距离目标还有 ${displayWeightToGoal} ${unit}！`
+    } else {
+      return `💪 加油！你已经减去 ${displayWeightLost} ${unit}，耗时 ${daysElapsed} 天，继续加油！`
+    }
+  } else if (weightLost < 0) {
+    return `⚠️ 注意！相比最初体重增加了 ${displayWeightLost} ${unit}，别气馁，从现在开始努力！`
+  } else {
+    if (daysElapsed > 7) {
+      return `🤔 体重 ${daysElapsed} 天没有变化，试试调整饮食和运动计划吧！`
+    } else {
+      return `👍 保持当前状态，坚持就是胜利！`
+    }
+  }
+})
 
 onMounted(async () => {
   // 获取用户信息
@@ -129,6 +171,9 @@ onMounted(async () => {
   
   // 加载用户设置
   await settingsStore.loadSettings()
+  
+  // 加载体重进度
+  userStore.fetchWeightProgress()
 })
 
 const handleCommand = (command) => {
@@ -189,6 +234,33 @@ const handleCommand = (command) => {
   padding: 8px 12px;
   border-radius: 8px;
   transition: background 0.2s;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin: 0 24px;
+  max-width: 600px;
+}
+
+.trophy-icon-small {
+  color: #ff9800;
+  font-size: 18px;
+}
+
+.encouragement-text-small {
+  font-size: 15px;
+  color: #5e35b1;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-info:hover {
